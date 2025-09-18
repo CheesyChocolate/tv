@@ -1,6 +1,7 @@
 .DEFAULT_GOAL := build
 
 .PHONY: fmt vet build clean
+PREFIX = /usr/local
 
 fmt:
 	go fmt ./...
@@ -13,3 +14,11 @@ build: vet
 
 clean:
 	rm -f tv
+
+install: build
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp tv $(DESTDIR)$(PREFIX)/bin/tv
+	chmod 755 $(DESTDIR)$(PREFIX)/bin/tv
+
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/tv
