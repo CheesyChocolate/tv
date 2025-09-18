@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -18,6 +20,7 @@ func main() {
 	const maxDepth = 6
 
 	var queue []string
+	var projectDirs []string
 
 	initialEntries, err := os.ReadDir(templatesPath)
 	if err != nil {
@@ -56,9 +59,40 @@ func main() {
 		}
 
 		if hasFiles || currentDepth >= maxDepth {
-			fmt.Println(dir)
+			projectDirs = append(projectDirs, dir)
 		} else {
 			queue = append(queue, subdirs...) // Enqueue subdirectories
 		}
+	}
+
+	if len(projectDirs) == 0 {
+		os.Exit(0)
+	}
+
+	fzfInput := strings.Join(projectDirs, "\n")
+	cmd := exec.Command("fzf", "--preview", "ls -la {} | head -20")
+	cmd.Stdin = strings.NewReader(fzfInput)
+	cmd.Stderr = os.Stderr
+
+	output, err := cmd.Output()
+	if err != nil {
+		os.Exit(1)
+	}
+
+	selectedPath := string(bytes.TrimSpace(output))
+	if selectedPath == "" {
+		os.Exit(1)
+	}
+
+	projectName := filepath.Base(selectedPath)
+	tmuxCmd := exec.Command("tmux", "new-session", "-A", "-s", projectName, "-c", selectedPath)
+	tmuxCmd.Stdin = os.Stdin
+	tmuxCmd.Stdout = os.Stdout
+	tmuxCmd.Stderr = os.Stderr
+
+	err = tmuxCmd.Run()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error executing tmux: %v\n", err)
+		os.Exit(1)
 	}
 }
