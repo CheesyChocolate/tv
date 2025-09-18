@@ -1,6 +1,5 @@
 .DEFAULT_GOAL := build
 
-.PHONY: fmt vet build clean
 PREFIX = /usr/local
 
 fmt:
@@ -22,3 +21,5 @@ install: build
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/tv
+
+.PHONY: fmt vet build clean install uninstall
