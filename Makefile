@@ -9,7 +9,7 @@ vet: fmt
 	go vet ./...
 
 build: vet
-	go build tv.go
+	go build -ldflags="-s -w" -trimpath tv.go
 
 clean:
 	rm -f tv
