@@ -28,9 +28,18 @@ func hydrate(sessionName, projectPath string) {
 func main() {
 	var simpleMode bool
 	var projectPathArg string
+	var MasterDir string
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Open a tmux session for a project.\n")
+		fmt.Fprintf(os.Stderr, "Options:\n")
+		flag.PrintDefaults()
+	}
 
 	flag.BoolVar(&simpleMode, "s", false, "Simple mode. no tmux, only one lf window")
 	flag.StringVar(&projectPathArg, "p", "", "path to project")
+	flag.StringVar(&MasterDir, "m", "~/Templates", "Master Directory to search for projects")
 	flag.Parse()
 
 	home, err := os.UserHomeDir()
@@ -38,24 +47,28 @@ func main() {
 		os.Exit(1)
 	}
 
+	if strings.HasPrefix(MasterDir, "~/") {
+		MasterDir = filepath.Join(home, MasterDir[2:])
+	}
+
 	selectedPath := projectPathArg
 
 	if selectedPath == "" {
-		templatesPath := filepath.Join(home, "Templates")
-		templatesDepth := len(strings.Split(templatesPath, string(os.PathSeparator)))
+		MasterPath := MasterDir
+		MasterDepth := len(strings.Split(MasterPath, string(os.PathSeparator)))
 		const maxDepth = 6
 
 		var queue []string
 		var projectDirs []string
 
-		initialEntries, err := os.ReadDir(templatesPath)
+		initialEntries, err := os.ReadDir(MasterPath)
 		if err != nil {
-			os.Exit(1)
+			os.Exit(0)
 		}
 
 		for _, entry := range initialEntries {
 			if entry.IsDir() {
-				queue = append(queue, filepath.Join(templatesPath, entry.Name()))
+				queue = append(queue, filepath.Join(MasterPath, entry.Name()))
 			}
 		}
 
@@ -63,7 +76,7 @@ func main() {
 			dir := queue[0]
 			queue = queue[1:]
 
-			currentDepth := len(strings.Split(dir, string(os.PathSeparator))) - templatesDepth
+			currentDepth := len(strings.Split(dir, string(os.PathSeparator))) - MasterDepth
 
 			var hasFiles bool
 			var subdirs []string
