@@ -20,7 +20,7 @@ func hydrate(sessionName, projectPath string) {
 	if _, err := os.Stat(sessionizerPath); err == nil {
 		// Source the .tmux-sessionizer file
 		// This is tricky to do directly in Go as it modifies the shell environment.
-		cmd := exec.Command("tmux", "send-keys", "-t", sessionName, fmt.Sprintf("source %s", sessionizerPath), "C-m")
+		cmd := exec.Command("tmux", "send-keys", "-t", "="+sessionName, fmt.Sprintf("source %s", sessionizerPath), "C-m")
 		cmd.Run()
 	}
 }
@@ -132,7 +132,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	sessionName := filepath.Base(selectedPath)
+	sessionName := strings.ReplaceAll(filepath.Base(selectedPath), ".", "_")
 
 	if !hasSession(sessionName) {
 		tmuxNewSessionCmd := exec.Command("tmux", "new-session", "-d", "-s", sessionName, "-n", "editor", "-c", selectedPath, "nvim .")
@@ -157,7 +157,7 @@ func main() {
 
 		for i, win := range windows {
 			windowNum := i + 2
-			args := []string{"new-window", "-t", fmt.Sprintf("%s:%d", sessionName, windowNum), "-n", win.name, "-c", selectedPath}
+			args := []string{"new-window", "-t", fmt.Sprintf("=%s:%d", sessionName, windowNum), "-n", win.name, "-c", selectedPath}
 			if win.command != "" {
 				args = append(args, win.command)
 			}
@@ -170,15 +170,15 @@ func main() {
 			}
 		}
 
-		muxSelectWindowCmd := exec.Command("tmux", "select-window", "-t", fmt.Sprintf("%s:1", sessionName))
+		muxSelectWindowCmd := exec.Command("tmux", "select-window", "-t", fmt.Sprintf("=%s:1", sessionName))
 		muxSelectWindowCmd.Run()
 
 		hydrate(sessionName, selectedPath)
 	}
 
-	attachCmd := exec.Command("tmux", "attach-session", "-t", sessionName)
+	attachCmd := exec.Command("tmux", "attach-session", "-t", "="+sessionName)
 	if os.Getenv("TMUX") != "" {
-		attachCmd = exec.Command("tmux", "switch-client", "-t", sessionName)
+		attachCmd = exec.Command("tmux", "switch-client", "-t", "="+sessionName)
 	}
 
 	attachCmd.Stdin = os.Stdin
