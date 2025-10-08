@@ -151,7 +151,7 @@ func main() {
 			{"shell", ""},
 			{"git", "nvim -c MagitOnly"},
 			{"lf", "lf"},
-			{"AI", "gemini -m gemini-2.5-flash"},
+			{"AI", "gemini"},
 			{"Security", "$SHELL -c \"echo 'Use <semgrep ci>, <snyk test>, or <gemini>'; exec $SHELL\""},
 		}
 
