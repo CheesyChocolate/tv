@@ -11,7 +11,7 @@ import (
 )
 
 func hasSession(sessionName string) bool {
-	cmd := exec.Command("tmux", "has-session", "-t", sessionName)
+	cmd := exec.Command("tmux", "has-session", "-t", "="+sessionName)
 	return cmd.Run() == nil
 }
 
