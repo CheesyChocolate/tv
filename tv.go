@@ -132,6 +132,10 @@ func main() {
 		os.Exit(0)
 	}
 
+	if absPath, err := filepath.Abs(selectedPath); err == nil {
+		selectedPath = absPath
+	}
+
 	sessionName := strings.ReplaceAll(filepath.Base(selectedPath), ".", "_")
 
 	if !hasSession(sessionName) {
