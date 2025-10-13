@@ -16,6 +16,7 @@ clean:
 
 install: build
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	rm -f $(DESTDIR)$(PREFIX)/bin/tv
 	cp tv $(DESTDIR)$(PREFIX)/bin/tv
 	chmod 755 $(DESTDIR)$(PREFIX)/bin/tv
 
